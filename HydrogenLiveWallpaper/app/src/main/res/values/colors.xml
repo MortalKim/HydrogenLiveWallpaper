@@ -60,4 +60,21 @@
     <color name="holo_green_dark">#669900</color>
     <color name="holo_purple_dark">#9933cc</color>
     <color name="holo_red_dark">#cc0000</color>
+
+    <array name="demo_colors">
+        <item>@color/md_red_500</item>
+        <item>@color/md_pink_500</item>
+        <item>@color/md_purple_500</item>
+    </array>
+
+    <!-- red -->
+    <color name="md_red_500">#f44336</color>
+
+    <!-- pink -->
+    <color name="md_pink_500">#e91e63</color>
+
+    <!-- purple -->
+    <color name="md_purple_500">#9c27b0</color>
+
+
 </resources>

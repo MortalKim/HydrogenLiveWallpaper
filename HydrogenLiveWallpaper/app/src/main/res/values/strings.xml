@@ -4,4 +4,6 @@
     <string name="about_Text">本软件仅在酷安上传，未经允许请勿上传至其他网站或平台\n\n
     设置好壁纸返回桌面之后，需要几秒来处理新图片效果\n
     如果刚设置好壁纸，位置不正确，滑动屏幕即可解决，若无解决请联系作者，感谢</string>
+
+    <string name="PickColorTitle">选择一个预设颜色或自定义</string>
 </resources>

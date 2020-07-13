@@ -134,6 +134,7 @@ class LiveWallpaperService : WallpaperService() {
 
         fun ReadAndDarwFirst(holder: SurfaceHolder){
             val canvas: Canvas = holder.lockCanvas()
+            WallpaperUtils.getSettings(applicationContext)
             var bm = WallpaperUtils.getSavedImage(baseContext)
             var wallpaperManager = WallpaperManager.getInstance(applicationContext)
             // 获取当前壁纸
