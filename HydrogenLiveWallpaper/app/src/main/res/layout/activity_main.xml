@@ -26,11 +26,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center">
-        <Button
-            android:id="@+id/setColor_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="设置副页颜色"/>
+
+<!--        <Button-->
+<!--            android:id="@+id/setColor_btn"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="设置副页颜色" />-->
+
         <Button
             android:id="@+id/setPic_btn"
             android:layout_width="wrap_content"
@@ -42,18 +44,19 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center">
-        <CheckBox
-            android:id="@+id/setMainPageTrans_CheckBox"
+        <Button
+            android:id="@+id/mainPagePopup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="主页渐变处理"/>
-        <CheckBox
-            android:id="@+id/setSecondPageGradient_CheckBox"
+            android:text="主页设置"/>
+
+        <Button
+            android:id="@+id/secondPagePopup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="使用计算的渐变副页颜色"/>
+            android:text="副页设置"/>
+
+
     </LinearLayout>
 
     <LinearLayout

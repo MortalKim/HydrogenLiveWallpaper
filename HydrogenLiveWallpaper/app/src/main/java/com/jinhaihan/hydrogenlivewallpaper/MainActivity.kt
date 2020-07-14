@@ -3,58 +3,72 @@ package com.jinhaihan.hydrogenlivewallpaper
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
-import android.app.PendingIntent.getActivity
 import android.app.WallpaperManager
 import android.content.ComponentName
-import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
+import android.os.Looper
 import android.util.DisplayMetrics
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.palette.graphics.Palette
-import com.jaredrummler.android.colorpicker.ColorPickerDialog
 import com.jaredrummler.android.colorpicker.ColorPickerDialogListener
-import com.jaredrummler.android.colorpicker.ColorShape
 import com.jinhaihan.hydrogenlivewallpaper.ViewPager.CardPagerAdapter
 import com.jinhaihan.hydrogenlivewallpaper.ViewPager.ShadowTransformer
 import com.jinhaihan.hydrogenlivewallpaper.WallpaperUtils.Companion.isUserSavedColor
 import com.jinhaihan.hydrogenlivewallpaper.WallpaperUtils.Companion.saveImagePath
+import com.tencent.mmkv.MMKV
+import com.wildma.pictureselector.PictureBean
 import com.wildma.pictureselector.PictureSelector
 import kotlinx.android.synthetic.main.activity_main.*
+import org.greenrobot.eventbus.EventBus
 import pub.devrel.easypermissions.EasyPermissions
+import java.io.ByteArrayOutputStream
 
 
 class MainActivity : AppCompatActivity(),ColorPickerDialogListener {
     var cardPagerAdapter = CardPagerAdapter()
 
+    var processThread :Thread? = null
+    var create = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        CheckPermission()
-
         init()
-
-
+        CheckPermission()
     }
 
 
     @SuppressLint("WrongConstant")
     private fun init()
     {
+        //读取设置
+        if(!WallpaperUtils.isSettingDone){
+            WallpaperUtils.getSettings()
+        }
+        //setMainPageTrans_CheckBox.isChecked = WallpaperUtils.isFirstNeedProcess
+        //setSecondPageGradient_CheckBox.isChecked = WallpaperUtils.isSecondPageGradient
+
         setWallPaper_btn.setOnClickListener {
-            val intent = Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER)
-            intent.putExtra(
-                WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT,
-                ComponentName(baseContext, LiveWallpaperService::class.java)
-            )
-            startActivity(intent)
+            if(create){
+                val intent = Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER)
+                intent.putExtra(
+                    WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT,
+                    ComponentName(baseContext, LiveWallpaperService::class.java)
+                )
+                startActivity(intent)
+            }
+            else{
+                Toast.makeText(this,"请耐心等待计算完成",Toast.LENGTH_LONG).show()
+            }
         }
 
         setPic_btn.setOnClickListener {
@@ -67,35 +81,32 @@ class MainActivity : AppCompatActivity(),ColorPickerDialogListener {
                 .selectPicture(true, width, height, width,height)
         }
 
-        setMainPageTrans_CheckBox.setOnCheckedChangeListener { buttonView, isChecked ->
-            WallpaperUtils.isFirstNeedProcess = isChecked
-            saveSettings()
-            refreshViewPager()
+        mainPagePopup.setOnClickListener {
+            MainPageSettingsPopup(this).showPopupWindow()
         }
 
-        setSecondPageGradient_CheckBox.setOnCheckedChangeListener { buttonView, isChecked ->
-            WallpaperUtils.isSecondPageGradient = isChecked
-            saveSettings()
-            refreshViewPager()
+        secondPagePopup.setOnClickListener {
+            SecondPageSettingsPopup(this).showPopupWindow()
         }
 
-        setColor_btn.setOnClickListener {
-            val dialog = ColorPickerDialog.newBuilder()
-                .setDialogType(ColorPickerDialog.TYPE_PRESETS)
-                .setDialogTitle(R.string.PickColorTitle)
-                .setColorShape(ColorShape.CIRCLE)
-                .setPresets(resources.getIntArray(R.array.demo_colors))
-                .setAllowPresets(true)
-                .setAllowCustom(true)
-                .setShowAlphaSlider(true)
-                .setShowColorShades(true)
-                .setColor(Color.BLACK)
-                .create()
-            dialog.setColorPickerDialogListener(this)
-            supportFragmentManager
-                .beginTransaction()
-                .add(dialog, "ColorDialog")
-                .commitAllowingStateLoss() }
+
+//        setColor_btn.setOnClickListener {
+//            val dialog = ColorPickerDialog.newBuilder()
+//                .setDialogType(ColorPickerDialog.TYPE_PRESETS)
+//                .setDialogTitle(R.string.PickColorTitle)
+//                .setColorShape(ColorShape.CIRCLE)
+//                .setPresets(resources.getIntArray(R.array.demo_colors))
+//                .setAllowPresets(true)
+//                .setAllowCustom(true)
+//                .setShowAlphaSlider(true)
+//                .setShowColorShades(true)
+//                .setColor(Color.BLACK)
+//                .create()
+//            dialog.setColorPickerDialogListener(this)
+//            supportFragmentManager
+//                .beginTransaction()
+//                .add(dialog, "ColorDialog")
+//                .commitAllowingStateLoss() }
 
         //init cardviewPager
         previewViewPager.adapter = cardPagerAdapter
@@ -107,13 +118,26 @@ class MainActivity : AppCompatActivity(),ColorPickerDialogListener {
         previewViewPager.setPageTransformer(false, mCardShadowTransformer)
         mCardShadowTransformer.enableScaling(true)
 
-        //读取设置
-        if(!WallpaperUtils.isSettingDone){
-           WallpaperUtils.getSettings(this)
-        }
-        setMainPageTrans_CheckBox.isChecked = WallpaperUtils.isFirstNeedProcess
-        setSecondPageGradient_CheckBox.isChecked = WallpaperUtils.isSecondPageGradient
 
+
+
+    }
+
+    fun setMainTransCheckBos(boolean: Boolean){
+        WallpaperUtils.isFirstNeedProcess = boolean
+        saveSettings()
+        refreshViewPager()
+    }
+
+    fun setSecondTransCheckBox(boolean: Boolean){
+        WallpaperUtils.isSecondPageGradient = boolean
+        saveSettings()
+        refreshViewPager()
+    }
+
+    fun setSecondEqualMain(boolean: Boolean){
+        WallpaperUtils.isSecondPageBitmapGradient = boolean
+        saveSettings()
         refreshViewPager()
     }
 
@@ -123,9 +147,9 @@ class MainActivity : AppCompatActivity(),ColorPickerDialogListener {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == PictureSelector.SELECT_REQUEST_CODE) {
             if (data != null) {
-                val picturePath: String =
-                    data.getStringExtra(PictureSelector.PICTURE_PATH)!!
-                saveImagePath(picturePath,applicationContext)
+                val picturePath: PictureBean =
+                    data.getParcelableExtra(PictureSelector.PICTURE_RESULT)!!
+                saveImagePath(picturePath)
                 //EventBus.getDefault().post(EventMessage())
                 refreshViewPager()
             }
@@ -144,34 +168,58 @@ class MainActivity : AppCompatActivity(),ColorPickerDialogListener {
             var wallpaperDrawable = wallpaperManager.drawable
             bm = (wallpaperDrawable as BitmapDrawable).bitmap
         }
+
+        Log.e("aaaa","开始取色计算" + (Thread.currentThread() == Looper.getMainLooper().getThread()))
         Palette.from(bm!!).generate(object : Palette.PaletteAsyncListener{
             override fun onGenerated(palette: Palette?) {
-                if (palette == null) {
-                    return
-                }
-                //palette取色不一定取得到某些特定的颜色，这里通过取多种颜色来避免取不到颜色的情况
-                if (palette.getDarkVibrantColor(Color.TRANSPARENT) !== Color.TRANSPARENT) {
-                    WallpaperUtils.createPreviewBitmaps(
-                        bm,
-                        palette.getDarkVibrantColor(Color.TRANSPARENT),
-                        palette.getVibrantColor(Color.TRANSPARENT)
-                    )
-                } else if (palette.getDarkMutedColor(Color.TRANSPARENT) !== Color.TRANSPARENT) {
-                    WallpaperUtils.createPreviewBitmaps(
-                        bm,
-                        palette.getDarkMutedColor(Color.TRANSPARENT),
-                        palette.getMutedColor(Color.TRANSPARENT)
-                    )
-                } else {
-                    WallpaperUtils.createPreviewBitmaps(
-                        bm,
-                        palette.getLightMutedColor(Color.TRANSPARENT),
-                        palette.getLightVibrantColor(Color.TRANSPARENT)
-                    )
-                }
-                cardPagerAdapter.SetBitmaps(WallpaperUtils.finalFirstBitmap,WallpaperUtils.finalSecondBitmap)
+               outputBitmap(palette,bm)
             }
         })
+    }
+
+    fun outputBitmap(palette: Palette?,bm:Bitmap){
+        processThread?.interrupt()
+        Toast.makeText(this,"计算完成后生效",Toast.LENGTH_LONG).show()
+
+        processThread = Thread(
+            object : Runnable {
+                override fun run() {
+                    if (palette == null) {
+                        return
+                    }
+                    //palette取色不一定取得到某些特定的颜色，这里通过取多种颜色来避免取不到颜色的情况
+                    if (palette.getDarkVibrantColor(Color.TRANSPARENT) !== Color.TRANSPARENT) {
+                        WallpaperUtils.createPreviewBitmaps(
+                            bm,
+                            palette.getDarkVibrantColor(Color.TRANSPARENT),
+                            palette.getVibrantColor(Color.TRANSPARENT)
+                        )
+                    } else if (palette.getDarkMutedColor(Color.TRANSPARENT) !== Color.TRANSPARENT) {
+                        WallpaperUtils.createPreviewBitmaps(
+                            bm,
+                            palette.getDarkMutedColor(Color.TRANSPARENT),
+                            palette.getMutedColor(Color.TRANSPARENT)
+                        )
+                    } else {
+                        WallpaperUtils.createPreviewBitmaps(
+                            bm,
+                            palette.getLightMutedColor(Color.TRANSPARENT),
+                            palette.getLightVibrantColor(Color.TRANSPARENT)
+                        )
+                    }
+                    Log.e("aaaa","取色计算完毕")
+                    saveTwoBitmap()
+                    runOnUiThread {
+                        cardPagerAdapter.SetBitmaps(WallpaperUtils.finalFirstBitmap,WallpaperUtils.finalSecondBitmap)
+                        Toast.makeText(this@MainActivity,"计算完成",Toast.LENGTH_LONG).show()
+                        create = true
+                    }
+                }
+
+            }
+        )
+        processThread!!.start()
+
     }
 
     override fun onDestroy() {
@@ -216,7 +264,7 @@ class MainActivity : AppCompatActivity(),ColorPickerDialogListener {
         val hasPermissions =
             EasyPermissions.hasPermissions(this, *permissions)
         if (hasPermissions) { //拥有权限
-
+            refreshViewPager()
         } else { //没有权限
             EasyPermissions.requestPermissions(this, "程序运行需要存储权限和相机权限", 0, *permissions)
         }
@@ -235,25 +283,35 @@ class MainActivity : AppCompatActivity(),ColorPickerDialogListener {
 
 
     private fun saveSettings(){
-        val sharedPreferences =
-            getSharedPreferences("data", Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-
-        editor.putBoolean("isFirstNeedProcess",WallpaperUtils.isFirstNeedProcess)
-        editor.putBoolean("isSecondPageGradient",WallpaperUtils.isSecondPageGradient)
-
-        //editor.putString("ImagePath", path)
-        //步骤4：提交
-        editor.apply()
+        var kv = MMKV.defaultMMKV()
+        kv.encode("isFirstNeedProcess",WallpaperUtils.isFirstNeedProcess)
+        kv.encode("isSecondPageGradient",WallpaperUtils.isSecondPageGradient)
+        kv.encode("isSecondPageBitmapGradient",WallpaperUtils.isSecondPageBitmapGradient)
     }
 
     private fun saveUserColor(color: Int){
-        val sharedPreferences =
-            getSharedPreferences("data", Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
+        var kv = MMKV.defaultMMKV()
+        kv.encode("UserColor", color)
+        kv.encode("isUserSavedColor",true)
+        isUserSavedColor = true
+    }
 
-        editor.putInt("UserColor", color)
-        editor.putBoolean("isUserSavedColor",true)
-        editor.apply()
+    fun saveTwoBitmap(){
+        var kv = MMKV.defaultMMKV()
+        if(WallpaperUtils.finalFirstBitmap != null){
+            var stream = ByteArrayOutputStream()
+            WallpaperUtils.finalFirstBitmap!!.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            var bitmapByte = stream.toByteArray()
+            kv.encode("firstView",bitmapByte)
+        }
+        if(WallpaperUtils.finalSecondBitmap != null){
+            var stream = ByteArrayOutputStream()
+            WallpaperUtils.finalSecondBitmap!!.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            var bitmapByte = stream.toByteArray()
+            kv.encode("secondView",bitmapByte)
+        }
+        //kv.encode("firstView",WallpaperUtils.finalFirstBitmap)
+        //kv.encode("secondView",WallpaperUtils.finalSecondBitmap)
+        EventBus.getDefault().post(EventMessage())
     }
 }

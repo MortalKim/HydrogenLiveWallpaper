@@ -3,7 +3,9 @@ package com.jinhaihan.hydrogenlivewallpaper
 import android.content.Context
 import android.graphics.*
 import android.util.Log
-import kotlinx.android.synthetic.main.activity_main.*
+import com.tencent.mmkv.MMKV
+import com.wildma.pictureselector.PictureBean
+import org.greenrobot.eventbus.EventBus
 
 
 class WallpaperUtils {
@@ -20,6 +22,8 @@ class WallpaperUtils {
 
         var isUserSavedColor : Boolean = false
         var userSecondPageColor : Int? = null
+
+        var isSecondPageBitmapGradient = false
 
         //MainActivity和Service都需要读取设置，为防止重复读取，设立此项
         var isSettingDone = false
@@ -57,12 +61,18 @@ class WallpaperUtils {
             val rectF = RectF(0f, 0f, mCanvas.width.toFloat(), mCanvas.height.toFloat())
             // mCanvas.drawRoundRect(rectF,16,16,mPaint); 这个用来绘制圆角的哈
             mCanvas.drawRect(rectF, lastPaint!!)
+            if(isSecondPageBitmapGradient){
+                mCanvas.drawBitmap(getImageToChange(bgBitmap)!!,0f,0f,lastPaint!!)
+            }
+
+
             if(isFirstNeedProcess){
                 lastBitmap = getImageToChange(bgBitmap)!!
             }
             val xScale: Float = (mCanvas.width.toFloat()  ) / lastBitmap!!.width
             lastBitmap = Bitmap.createScaledBitmap(lastBitmap!!,(xScale*(lastBitmap!!.width)).toInt(),(xScale*lastBitmap!!.height).toInt(),true)
             mCanvas.drawBitmap(lastBitmap!!,0f,0f,lastPaint!!)
+            EventBus.getDefault().post(EventMessage())
         }
 
         fun createPreviewBitmaps(bgBitmap: Bitmap, darkColor: Int, color: Int){
@@ -100,6 +110,10 @@ class WallpaperUtils {
 
             val rectF = RectF(0f, 0f, bgBitmap.width.toFloat(), bgBitmap.height.toFloat())
             mCanvas.drawRect(rectF, lastPaint!!)
+            if(isSecondPageBitmapGradient){
+                mCanvas.drawBitmap(getImageToChange(bgBitmap)!!,0f,0f,lastPaint!!)
+            }
+
             finalSecondBitmap = finalFirstBitmap!!.copy(Bitmap.Config.ARGB_8888,true) //目前first是在canvas中处理过的渐变
             lastBitmap = if(isFirstNeedProcess){
                 getImageToChange(bgBitmap)!! //检测是否需要渐变处理
@@ -110,6 +124,9 @@ class WallpaperUtils {
             mCanvas.drawBitmap(lastBitmap!!,0f,0f,lastPaint!!) //将lastBitmap绘制到first
         }
 
+        /**
+         * 图渐变算法
+         */
         fun getImageToChange(mBitmap: Bitmap): Bitmap? {
             //Log.d(TAG, "with=" + mBitmap.width + "--height=" + mBitmap.height)
             val createBitmap = Bitmap.createBitmap(
@@ -145,34 +162,30 @@ class WallpaperUtils {
         }
 
         fun getSavedImage(context: Context):Bitmap?{
-            var sharedPreferences = context.getSharedPreferences("data", Context .MODE_PRIVATE)
-            var path = sharedPreferences.getString("ImagePath","")
-            if(path!= ""){
-               return BitmapFactory.decodeFile(path)
+            var kv = MMKV.defaultMMKV()
+            var bean = kv.decodeParcelable("ImagePath",PictureBean::class.java)
+            return if(bean != null){
+                BitmapFactory.decodeFile(bean.path)
+            } else{
+                null
             }
-            return null
         }
 
 
-        fun saveImagePath(path:String, context: Context){
-            val sharedPreferences =
-                context.getSharedPreferences("data", Context.MODE_PRIVATE)
-            val editor = sharedPreferences.edit()
-            editor.putString("ImagePath", path)
-            //步骤4：提交
-            editor.apply()
+        fun saveImagePath(path: PictureBean){
+            var kv = MMKV.defaultMMKV()
+            kv.encode("ImagePath", path)
         }
 
-        fun getSettings(context: Context){
-            var sharedPreferences = context.getSharedPreferences("data", Context .MODE_PRIVATE)
-            //var path = sharedPreferences.getString("ImagePath","")
-            if(sharedPreferences.getBoolean("isUserSavedColor", false)){
+        fun getSettings(){
+            var kv = MMKV.defaultMMKV()
+            if(kv.decodeBool("isUserSavedColor", false)){
                 isUserSavedColor = true
-                userSecondPageColor = sharedPreferences.getInt("UserColor", 0)
+                userSecondPageColor = kv.decodeInt("UserColor", 0)
             }
-            isFirstNeedProcess = sharedPreferences.getBoolean("isFirstNeedProcess", true)
-            isSecondPageGradient = sharedPreferences.getBoolean("isSecondPageGradient", true)
-
+            isFirstNeedProcess = kv.decodeBool("isFirstNeedProcess", true)
+            isSecondPageGradient = kv.decodeBool("isSecondPageGradient", true)
+            isSecondPageBitmapGradient = kv.decodeBool("isSecondPageBitmapGradient",false)
             isSettingDone = true
         }
 

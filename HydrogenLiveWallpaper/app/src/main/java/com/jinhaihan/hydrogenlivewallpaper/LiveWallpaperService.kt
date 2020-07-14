@@ -10,9 +10,11 @@ import androidx.palette.graphics.Palette
 import com.jinhaihan.hydrogenlivewallpaper.WallpaperUtils.Companion.createLinearGradientBitmap
 import com.jinhaihan.hydrogenlivewallpaper.WallpaperUtils.Companion.lastBitmap
 import com.jinhaihan.hydrogenlivewallpaper.WallpaperUtils.Companion.lastPaint
+import com.tencent.mmkv.MMKV
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import java.lang.Exception
 
 
 class LiveWallpaperService : WallpaperService() {
@@ -21,6 +23,8 @@ class LiveWallpaperService : WallpaperService() {
         var needReDarw = false
     }
     var mEngine : MyEngine? = null
+    var firstBitMap:Bitmap?=null
+    var secondBitMap:Bitmap?=null
 
     override fun onCreateEngine(): Engine {
         mEngine = MyEngine()
@@ -48,6 +52,7 @@ class LiveWallpaperService : WallpaperService() {
         }
 
         override fun onCreate(surfaceHolder: SurfaceHolder?) {
+            readBitMap()
             super.onCreate(surfaceHolder)
         }
 
@@ -69,8 +74,9 @@ class LiveWallpaperService : WallpaperService() {
         override fun onSurfaceCreated(holder: SurfaceHolder?) {
             super.onSurfaceCreated(holder)
             Log.e(Tag,"onSurfaceCreated")
-            created = false
-            ReadAndDarwFirst(holder!!)
+
+            //created = false
+            //ReadAndDarwFirst(holder!!)
         }
 
         override fun onSurfaceDestroyed(holder: SurfaceHolder?) {
@@ -104,22 +110,21 @@ class LiveWallpaperService : WallpaperService() {
         fun DarwNewView(){
             if(created){
                 //如果大于步长则直接显示背景
-                if(needReDarw){
-                    needReDarw = false
-                    created = false
-                    ReadAndDarwFirst(mEngine!!.surfaceHolder!!)
-                    return
-                }
+//                if(needReDarw){
+//                    needReDarw = false
+//                    created = false
+//                    ReadAndDarwFirst(mEngine!!.surfaceHolder!!)
+//                    return
+//                }
                 if(xOffset <= xOffsetStep && xOffsetStep <= 1){
 
                     Log.e("aaa","0")
                     var mCanvas = surfaceHolder!!.lockCanvas()
-                    val rectF = RectF(0f, 0f, mCanvas.width.toFloat(), mCanvas.height.toFloat())
-                    mCanvas?.drawRect(rectF, paint!!)
+                    mCanvas?.drawBitmap(secondBitMap!!,0f,0f,paint)
                     var newPaint = Paint()
                     newPaint.style = Paint.Style.FILL
                     newPaint.alpha = (((xOffsetStep - xOffset) / xOffsetStep) * 255).toInt()
-                    mCanvas.drawBitmap(bitmap!!,0f,0f,newPaint)
+                    mCanvas.drawBitmap(firstBitMap!!,0f,0f,newPaint)
                     surfaceHolder!!.unlockCanvasAndPost(mCanvas)
                 }
 //                else{
@@ -129,12 +134,12 @@ class LiveWallpaperService : WallpaperService() {
 //                    surfaceHolder!!.unlockCanvasAndPost(mCanvas)
 //                }
             }
-
         }
 
         fun ReadAndDarwFirst(holder: SurfaceHolder){
+            Log.e("asdasd","开始生成动态壁纸")
             val canvas: Canvas = holder.lockCanvas()
-            WallpaperUtils.getSettings(applicationContext)
+            WallpaperUtils.getSettings()
             var bm = WallpaperUtils.getSavedImage(baseContext)
             var wallpaperManager = WallpaperManager.getInstance(applicationContext)
             // 获取当前壁纸
@@ -148,34 +153,48 @@ class LiveWallpaperService : WallpaperService() {
 
             Palette.from(bm!!).generate(object : Palette.PaletteAsyncListener{
                 override fun onGenerated(palette: Palette?) {
-                    if (palette == null) {
-                        holder.unlockCanvasAndPost(canvas)
-                        Log.e("Palette","palette == null")
-                        return
-                    }
-                    //palette取色不一定取得到某些特定的颜色，这里通过取多种颜色来避免取不到颜色的情况
-                    if (palette.getDarkVibrantColor(Color.TRANSPARENT) !== Color.TRANSPARENT) {
-                        createLinearGradientBitmap(canvas,bm,
-                            palette.getDarkVibrantColor(Color.TRANSPARENT),
-                            palette.getVibrantColor(Color.TRANSPARENT)
-                        )
-                    } else if (palette.getDarkMutedColor(Color.TRANSPARENT) !== Color.TRANSPARENT) {
-                        createLinearGradientBitmap(canvas,bm,
-                            palette.getDarkMutedColor(Color.TRANSPARENT),
-                            palette.getMutedColor(Color.TRANSPARENT)
-                        )
-                    } else {
-                        createLinearGradientBitmap(canvas,bm,
-                            palette.getLightMutedColor(Color.TRANSPARENT),
-                            palette.getLightVibrantColor(Color.TRANSPARENT)
-                        )
-                    }
-                    //color = palette.
-                    holder.unlockCanvasAndPost(canvas)
+                    try {
+                        if (palette == null) {
+                            holder.unlockCanvasAndPost(canvas)
+                            Log.e("Palette","palette == null")
+                            return
+                        }
+                        //palette取色不一定取得到某些特定的颜色，这里通过取多种颜色来避免取不到颜色的情况
+                        if (palette.getDarkVibrantColor(Color.TRANSPARENT) !== Color.TRANSPARENT) {
+                            createLinearGradientBitmap(canvas,bm,
+                                palette.getDarkVibrantColor(Color.TRANSPARENT),
+                                palette.getVibrantColor(Color.TRANSPARENT)
+                            )
+                        } else if (palette.getDarkMutedColor(Color.TRANSPARENT) !== Color.TRANSPARENT) {
+                            createLinearGradientBitmap(canvas,bm,
+                                palette.getDarkMutedColor(Color.TRANSPARENT),
+                                palette.getMutedColor(Color.TRANSPARENT)
+                            )
+                        } else {
+                            createLinearGradientBitmap(canvas,bm,
+                                palette.getLightMutedColor(Color.TRANSPARENT),
+                                palette.getLightVibrantColor(Color.TRANSPARENT)
+                            )
+                        }
+                        //color = palette.
+                        if(canvas != null ){
+                            try {
+                                holder.unlockCanvasAndPost(canvas)
+                            } catch (e: IllegalArgumentException) {
+                                print(e.message)
+                            }
+                        }
 
-                    paint = lastPaint
-                    bitmap = lastBitmap
-                    created = true
+                        paint = lastPaint
+                        bitmap = lastBitmap
+                        created = true
+                    }
+                    catch (e:Exception){
+                        print(e.message)
+                        holder.lockCanvas()
+                        ReadAndDarwFirst(holder)
+                    }
+
                 }
             })
         }
@@ -185,5 +204,20 @@ class LiveWallpaperService : WallpaperService() {
     fun getEvent(event:EventMessage){
         //mEngine!!.ReadAndDarwFirst(mEngine!!.surfaceHolder!!)
         //mEngine!!.DarwNewView()
+        readBitMap()
+    }
+
+    fun readBitMap(){
+        var kv = MMKV.defaultMMKV()
+        val firstBitMapBytes = kv.decodeBytes("firstView")
+        val secondBitMapBytes = kv.decodeBytes("secondView")
+
+        if(firstBitMapBytes != null && secondBitMapBytes != null){
+            firstBitMap = BitmapFactory.decodeByteArray(firstBitMapBytes , 0, firstBitMapBytes.size);
+            secondBitMap = BitmapFactory.decodeByteArray(secondBitMapBytes , 0, secondBitMapBytes.size);
+            //firstBitMap = kv.decodeBytes("firstView", ByteArray(1))
+            //secondBitMap = kv.decodeParcelable("secondView",Bitmap::class.java)
+            mEngine?.created = true
+        }
     }
 }
