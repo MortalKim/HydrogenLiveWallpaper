@@ -54,6 +54,7 @@ class LiveWallpaperService : WallpaperService() {
         override fun onCreate(surfaceHolder: SurfaceHolder?) {
             readBitMap()
             super.onCreate(surfaceHolder)
+            surfaceHolder!!.setFormat(android.graphics.PixelFormat.RGBA_8888);
         }
 
         override fun onDestroy() {
@@ -213,8 +214,11 @@ class LiveWallpaperService : WallpaperService() {
         val secondBitMapBytes = kv.decodeBytes("secondView")
 
         if(firstBitMapBytes != null && secondBitMapBytes != null){
-            firstBitMap = BitmapFactory.decodeByteArray(firstBitMapBytes , 0, firstBitMapBytes.size);
-            secondBitMap = BitmapFactory.decodeByteArray(secondBitMapBytes , 0, secondBitMapBytes.size);
+            var op = BitmapFactory.Options()
+            op.inPreferredConfig = Bitmap.Config.ARGB_8888;
+
+            firstBitMap = BitmapFactory.decodeByteArray(firstBitMapBytes , 0, firstBitMapBytes.size,op);
+            secondBitMap = BitmapFactory.decodeByteArray(secondBitMapBytes , 0, secondBitMapBytes.size,op);
             //firstBitMap = kv.decodeBytes("firstView", ByteArray(1))
             //secondBitMap = kv.decodeParcelable("secondView",Bitmap::class.java)
             mEngine?.created = true

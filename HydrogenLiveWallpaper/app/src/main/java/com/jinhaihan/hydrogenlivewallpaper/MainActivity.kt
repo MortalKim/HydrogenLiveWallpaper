@@ -168,7 +168,6 @@ class MainActivity : AppCompatActivity(),ColorPickerDialogListener {
             var wallpaperDrawable = wallpaperManager.drawable
             bm = (wallpaperDrawable as BitmapDrawable).bitmap
         }
-
         Log.e("aaaa","开始取色计算" + (Thread.currentThread() == Looper.getMainLooper().getThread()))
         Palette.from(bm!!).generate(object : Palette.PaletteAsyncListener{
             override fun onGenerated(palette: Palette?) {

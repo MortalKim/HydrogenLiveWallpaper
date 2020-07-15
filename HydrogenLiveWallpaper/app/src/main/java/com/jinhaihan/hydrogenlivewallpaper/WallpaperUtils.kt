@@ -84,6 +84,7 @@ class WallpaperUtils {
                 bgColors[0] = darkColor
                 bgColors[1] = color
                 lastPaint = Paint()
+                lastPaint!!.isDither = true
                 mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
                 val gradient = LinearGradient(
                     0f,
@@ -94,10 +95,12 @@ class WallpaperUtils {
                     bgColors[1],
                     Shader.TileMode.CLAMP
                 )
+
                 lastPaint!!.shader = gradient
             }
             else{
                 lastPaint = Paint()
+                lastPaint!!.isDither = true
                 if(isUserSavedColor){
                     Log.i(TAG,"userSecondPageColor：null" + color.toString())
                     lastPaint!!.color = userSecondPageColor!!
@@ -165,7 +168,9 @@ class WallpaperUtils {
             var kv = MMKV.defaultMMKV()
             var bean = kv.decodeParcelable("ImagePath",PictureBean::class.java)
             return if(bean != null){
-                BitmapFactory.decodeFile(bean.path)
+                var op = BitmapFactory.Options()
+                op.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                BitmapFactory.decodeFile(bean.path, op)
             } else{
                 null
             }
