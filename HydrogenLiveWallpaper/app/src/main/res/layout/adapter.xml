@@ -49,8 +49,7 @@
                 android:layout_height="0dp"
                 android:layout_weight="1"
                 android:scaleType="centerInside"
-                android:adjustViewBounds="true"
-                android:src="@color/color_f74e00"/>
+                android:adjustViewBounds="true"/>
             <TextView
                 android:id="@+id/name"
                 android:layout_width="match_parent"

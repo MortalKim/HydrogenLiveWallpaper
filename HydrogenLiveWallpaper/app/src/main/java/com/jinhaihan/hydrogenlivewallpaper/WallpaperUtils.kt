@@ -10,6 +10,7 @@ import org.greenrobot.eventbus.EventBus
 
 class WallpaperUtils {
     companion object{
+        var created = false
         var TAG = "WallpaperUtils"
         var lastPaint : Paint? = null
         var lastBitmap : Bitmap ? = null
@@ -27,6 +28,88 @@ class WallpaperUtils {
 
         //MainActivity和Service都需要读取设置，为防止重复读取，设立此项
         var isSettingDone = false
+
+        fun makeTwoBitmap(bitmap: Bitmap,darkColor: Int, color: Int){
+            finalFirstBitmap = makeFirstBitmap(bitmap,darkColor,color)
+            finalSecondBitmap = makeSecondBitmap(bitmap,darkColor,color)
+        }
+
+        fun makeFirstBitmap(bitmap: Bitmap,darkColor: Int, color: Int):Bitmap{
+            return if(!isFirstNeedProcess) bitmap
+            else getGradientBitMap(bitmap,darkColor, color)
+        }
+
+        fun makeSecondBitmap(bitmap: Bitmap,darkColor: Int, color: Int):Bitmap{
+            var canvas = Canvas(bitmap)
+            if(isSecondPageGradient){
+                //渲染渐变色
+                var bit = getGradient(bitmap,darkColor,color)
+                canvas.drawBitmap(bit,0f,0f,null)
+
+                if(isSecondPageBitmapGradient){
+                    //渲染原图渐变
+                    canvas.drawBitmap(getGradientBitMap(bitmap,darkColor,color),0f,0f,null)
+                }
+            }
+            else{
+                //渲染用户色
+                val paint = Paint()
+
+                if(isUserSavedColor){
+                    paint.color = userSecondPageColor!!
+                }
+                else {
+                    paint.color = color
+                }
+                val rectF = RectF(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat())
+                canvas.drawRect(rectF, lastPaint!!)
+                if(isSecondPageBitmapGradient){
+                    //渲染原图渐变
+                    canvas.drawBitmap(getGradientBitMap(bitmap,darkColor,color),0f,0f,null)
+                }
+            }
+            return bitmap
+        }
+
+        /**
+         * 创建自上而下的渐变Bitmap
+         */
+        fun getGradientBitMap(bgBitmap: Bitmap,darkColor: Int, color: Int):Bitmap{
+            val bitmap = Bitmap.createBitmap(bgBitmap.width,bgBitmap.height,Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bitmap)
+            canvas.drawBitmap(getGradient(bgBitmap,darkColor,color),0f,0f,null)
+            canvas.drawBitmap(getImageToChange(bgBitmap)!!,0f,0f,null)
+            return bitmap
+        }
+
+        /**
+         * 创建对应颜色的渐变效果
+         */
+        fun getGradient(bgBitmap: Bitmap,darkColor: Int, color: Int):Bitmap{
+            val bitmap = Bitmap.createBitmap(bgBitmap.width,bgBitmap.height,Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bitmap)
+
+            val bgColors = IntArray(2)
+            bgColors[0] = darkColor
+            bgColors[1] = color
+            val paint = Paint()
+            canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
+            val gradient = LinearGradient(
+                0f,
+                0f,
+                0f,
+                canvas.height.toFloat(),
+                bgColors[0],
+                bgColors[1],
+                Shader.TileMode.CLAMP
+            )
+            paint.shader = gradient
+            paint.style = Paint.Style.FILL
+            val rectF = RectF(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat())
+            // mCanvas.drawRoundRect(rectF,16,16,mPaint); 这个用来绘制圆角的哈
+            canvas.drawRect(rectF, paint)
+            return bitmap
+        }
 
         //创建线性渐变背景色
         fun createLinearGradientBitmap(mCanvas: Canvas,bgBitmap: Bitmap,darkColor: Int, color: Int) {
@@ -169,8 +252,8 @@ class WallpaperUtils {
             var bean = kv.decodeParcelable("ImagePath",PictureBean::class.java)
             return if(bean != null){
                 var op = BitmapFactory.Options()
-                op.inPreferredConfig = Bitmap.Config.ARGB_8888;
-                BitmapFactory.decodeFile(bean.path, op)
+                op.inPreferredConfig = Bitmap.Config.ARGB_8888
+                BitmapFactory.decodeFile(bean.path, op)?.copy(Bitmap.Config.ARGB_8888,true)
             } else{
                 null
             }
@@ -183,14 +266,14 @@ class WallpaperUtils {
         }
 
         fun getSettings(){
-            var kv = MMKV.defaultMMKV()
-            if(kv.decodeBool("isUserSavedColor", false)){
+            val kv = MMKV.defaultMMKV()
+            if(kv.decodeBool(Constant.isUserSavedColor, false)){
                 isUserSavedColor = true
-                userSecondPageColor = kv.decodeInt("UserColor", 0)
+                userSecondPageColor = kv.decodeInt(Constant.UserColor, 0)
             }
-            isFirstNeedProcess = kv.decodeBool("isFirstNeedProcess", true)
-            isSecondPageGradient = kv.decodeBool("isSecondPageGradient", true)
-            isSecondPageBitmapGradient = kv.decodeBool("isSecondPageBitmapGradient",false)
+            isFirstNeedProcess = kv.decodeBool(Constant.isFirstNeedProcess, true)
+            isSecondPageGradient = kv.decodeBool(Constant.isSecondPageGradient, true)
+            isSecondPageBitmapGradient = kv.decodeBool(Constant.isSecondPageBitmapGradient,false)
             isSettingDone = true
         }
 

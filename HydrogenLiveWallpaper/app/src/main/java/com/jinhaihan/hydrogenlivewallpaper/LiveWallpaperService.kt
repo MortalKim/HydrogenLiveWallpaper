@@ -109,7 +109,7 @@ class LiveWallpaperService : WallpaperService() {
         }
 
         fun DarwNewView(){
-            if(created){
+            if(WallpaperUtils.created && created){
                 //如果大于步长则直接显示背景
 //                if(needReDarw){
 //                    needReDarw = false
@@ -135,69 +135,6 @@ class LiveWallpaperService : WallpaperService() {
 //                    surfaceHolder!!.unlockCanvasAndPost(mCanvas)
 //                }
             }
-        }
-
-        fun ReadAndDarwFirst(holder: SurfaceHolder){
-            Log.e("asdasd","开始生成动态壁纸")
-            val canvas: Canvas = holder.lockCanvas()
-            WallpaperUtils.getSettings()
-            var bm = WallpaperUtils.getSavedImage(baseContext)
-            var wallpaperManager = WallpaperManager.getInstance(applicationContext)
-            // 获取当前壁纸
-            var wallpaperDrawable = wallpaperManager.drawable
-            if(bm == null){
-                // 将Drawable,转成Bitmap
-                bm = (wallpaperDrawable as BitmapDrawable).bitmap
-            }
-
-            //canvas.drawBitmap(bm,0f,0f, Paint())
-
-            Palette.from(bm!!).generate(object : Palette.PaletteAsyncListener{
-                override fun onGenerated(palette: Palette?) {
-                    try {
-                        if (palette == null) {
-                            holder.unlockCanvasAndPost(canvas)
-                            Log.e("Palette","palette == null")
-                            return
-                        }
-                        //palette取色不一定取得到某些特定的颜色，这里通过取多种颜色来避免取不到颜色的情况
-                        if (palette.getDarkVibrantColor(Color.TRANSPARENT) !== Color.TRANSPARENT) {
-                            createLinearGradientBitmap(canvas,bm,
-                                palette.getDarkVibrantColor(Color.TRANSPARENT),
-                                palette.getVibrantColor(Color.TRANSPARENT)
-                            )
-                        } else if (palette.getDarkMutedColor(Color.TRANSPARENT) !== Color.TRANSPARENT) {
-                            createLinearGradientBitmap(canvas,bm,
-                                palette.getDarkMutedColor(Color.TRANSPARENT),
-                                palette.getMutedColor(Color.TRANSPARENT)
-                            )
-                        } else {
-                            createLinearGradientBitmap(canvas,bm,
-                                palette.getLightMutedColor(Color.TRANSPARENT),
-                                palette.getLightVibrantColor(Color.TRANSPARENT)
-                            )
-                        }
-                        //color = palette.
-                        if(canvas != null ){
-                            try {
-                                holder.unlockCanvasAndPost(canvas)
-                            } catch (e: IllegalArgumentException) {
-                                print(e.message)
-                            }
-                        }
-
-                        paint = lastPaint
-                        bitmap = lastBitmap
-                        created = true
-                    }
-                    catch (e:Exception){
-                        print(e.message)
-                        holder.lockCanvas()
-                        ReadAndDarwFirst(holder)
-                    }
-
-                }
-            })
         }
     }
 

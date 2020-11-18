@@ -7,6 +7,7 @@ import android.widget.CheckBox
 import android.widget.TextView
 import com.jaredrummler.android.colorpicker.ColorPickerDialog
 import com.jaredrummler.android.colorpicker.ColorShape
+import com.tencent.mmkv.MMKV
 import razerdp.basepopup.BasePopupWindow
 
 /**
@@ -17,6 +18,7 @@ import razerdp.basepopup.BasePopupWindow
 class SecondPageSettingsPopup(val context: MainActivity) : BasePopupWindow(context) {
     override fun onCreateContentView(): View {
         val view = createPopupById(R.layout.settings_second)
+        val kv = MMKV.defaultMMKV()
 
         //读取设置
         if(!WallpaperUtils.isSettingDone){
@@ -26,13 +28,13 @@ class SecondPageSettingsPopup(val context: MainActivity) : BasePopupWindow(conte
         var setSecondPageEqualMain_CheckBox = view.findViewById<CheckBox>(R.id.setSecondPageEqualMain_CheckBox)
         setSecondPageEqualMain_CheckBox.isChecked = WallpaperUtils.isSecondPageBitmapGradient
         setSecondPageEqualMain_CheckBox.setOnCheckedChangeListener { buttonView, isChecked ->
-            context.setSecondEqualMain(isChecked)
+            kv.encode(Constant.isSecondPageBitmapGradient, isChecked)
         }
 
         var setSecondPageGradient_CheckBox = view.findViewById<CheckBox>(R.id.setSecondPageGradient_CheckBox)
         setSecondPageGradient_CheckBox.isChecked = WallpaperUtils.isSecondPageGradient
         setSecondPageGradient_CheckBox.setOnCheckedChangeListener { buttonView, isChecked ->
-            context.setSecondTransCheckBox(isChecked)
+            kv.encode(Constant.isSecondPageGradient, isChecked)
         }
 
         var setColor_btn = view.findViewById<Button>(R.id.setColor_btn)
@@ -55,7 +57,7 @@ class SecondPageSettingsPopup(val context: MainActivity) : BasePopupWindow(conte
                 .commitAllowingStateLoss()
         }
 
-        var okButton = view.findViewById<TextView>(R.id.ok)
+        val okButton = view.findViewById<TextView>(R.id.ok)
         okButton.setOnClickListener {
             dismiss()
         }
