@@ -1,20 +1,16 @@
 package com.jinhaihan.hydrogenlivewallpaper
 
-import android.app.WallpaperManager
-import android.graphics.*
-import android.graphics.drawable.BitmapDrawable
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Paint
 import android.service.wallpaper.WallpaperService
+import android.util.DisplayMetrics
 import android.util.Log
 import android.view.SurfaceHolder
-import androidx.palette.graphics.Palette
-import com.jinhaihan.hydrogenlivewallpaper.WallpaperUtils.Companion.createLinearGradientBitmap
-import com.jinhaihan.hydrogenlivewallpaper.WallpaperUtils.Companion.lastBitmap
-import com.jinhaihan.hydrogenlivewallpaper.WallpaperUtils.Companion.lastPaint
 import com.tencent.mmkv.MMKV
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import java.lang.Exception
 
 
 class LiveWallpaperService : WallpaperService() {
@@ -23,8 +19,6 @@ class LiveWallpaperService : WallpaperService() {
         var needReDarw = false
     }
     var mEngine : MyEngine? = null
-    var firstBitMap:Bitmap?=null
-    var secondBitMap:Bitmap?=null
 
     override fun onCreateEngine(): Engine {
         mEngine = MyEngine()
@@ -40,9 +34,15 @@ class LiveWallpaperService : WallpaperService() {
     }
 
     inner class MyEngine : Engine() {
+
+        var firstBitMap:Bitmap?=null
+        var secondBitMap:Bitmap?=null
+
         var xOffset : Float = 0f
         var xOffsetStep : Float = 0f
         var paint : Paint? = null
+        var newPaint = Paint()
+
         var bitmap : Bitmap ? = null
         var created = false
         //var color : Color = Color.BLACK
@@ -55,6 +55,7 @@ class LiveWallpaperService : WallpaperService() {
             readBitMap()
             super.onCreate(surfaceHolder)
             surfaceHolder!!.setFormat(android.graphics.PixelFormat.RGBA_8888);
+            newPaint.style = Paint.Style.FILL
         }
 
         override fun onDestroy() {
@@ -75,7 +76,9 @@ class LiveWallpaperService : WallpaperService() {
         override fun onSurfaceCreated(holder: SurfaceHolder?) {
             super.onSurfaceCreated(holder)
             Log.e(Tag,"onSurfaceCreated")
-
+            var c = holder!!.lockCanvas()
+            scaleBitmap(c.height)
+            holder.unlockCanvasAndPost(c)
             //created = false
             //ReadAndDarwFirst(holder!!)
         }
@@ -109,32 +112,38 @@ class LiveWallpaperService : WallpaperService() {
         }
 
         fun DarwNewView(){
-            if(WallpaperUtils.created && created){
-                //如果大于步长则直接显示背景
-//                if(needReDarw){
-//                    needReDarw = false
-//                    created = false
-//                    ReadAndDarwFirst(mEngine!!.surfaceHolder!!)
-//                    return
-//                }
-                if(xOffset <= xOffsetStep && xOffsetStep <= 1){
-
-                    Log.e("aaa","0")
+            if(created){
+                if(xOffsetStep in xOffset..1.0F){
                     var mCanvas = surfaceHolder!!.lockCanvas()
                     mCanvas?.drawBitmap(secondBitMap!!,0f,0f,paint)
-                    var newPaint = Paint()
-                    newPaint.style = Paint.Style.FILL
                     newPaint.alpha = (((xOffsetStep - xOffset) / xOffsetStep) * 255).toInt()
-                    mCanvas.drawBitmap(firstBitMap!!,0f,0f,newPaint)
+                    mCanvas?.drawBitmap(firstBitMap!!,0f,0f,newPaint)
                     surfaceHolder!!.unlockCanvasAndPost(mCanvas)
                 }
-//                else{
-//                    Log.e("aaa","1")
-//                    var mCanvas = surfaceHolder!!.lockCanvas()
-//                    mCanvas.drawBitmap(bitmap!!,0f,0f, lastPaint)
-//                    surfaceHolder!!.unlockCanvasAndPost(mCanvas)
-//                }
             }
+        }
+
+        fun readBitMap(){
+            var kv = MMKV.defaultMMKV()
+            val firstBitMapBytes = kv.decodeBytes("firstView")
+            val secondBitMapBytes = kv.decodeBytes("secondView")
+
+            if(firstBitMapBytes != null && secondBitMapBytes != null){
+                var op = BitmapFactory.Options()
+                op.inPreferredConfig = Bitmap.Config.ARGB_8888;
+
+                firstBitMap = BitmapFactory.decodeByteArray(firstBitMapBytes , 0, firstBitMapBytes.size,op);
+                secondBitMap = BitmapFactory.decodeByteArray(secondBitMapBytes , 0, secondBitMapBytes.size,op);
+
+                mEngine?.created = true
+            }
+        }
+
+        fun scaleBitmap(height:Int){
+            var xScale: Float = height.toFloat()/ firstBitMap!!.height
+            firstBitMap = Bitmap.createScaledBitmap(firstBitMap!!,(xScale*(firstBitMap!!.width)).toInt(),(xScale* firstBitMap!!.height).toInt(), true)
+            xScale = height.toFloat()/ secondBitMap!!.height
+            secondBitMap = Bitmap.createScaledBitmap(secondBitMap!!,(xScale*(secondBitMap!!.width)).toInt(),(xScale* secondBitMap!!.height).toInt(), true)
         }
     }
 
@@ -142,23 +151,8 @@ class LiveWallpaperService : WallpaperService() {
     fun getEvent(event:EventMessage){
         //mEngine!!.ReadAndDarwFirst(mEngine!!.surfaceHolder!!)
         //mEngine!!.DarwNewView()
-        readBitMap()
+        mEngine?.readBitMap()
     }
 
-    fun readBitMap(){
-        var kv = MMKV.defaultMMKV()
-        val firstBitMapBytes = kv.decodeBytes("firstView")
-        val secondBitMapBytes = kv.decodeBytes("secondView")
 
-        if(firstBitMapBytes != null && secondBitMapBytes != null){
-            var op = BitmapFactory.Options()
-            op.inPreferredConfig = Bitmap.Config.ARGB_8888;
-
-            firstBitMap = BitmapFactory.decodeByteArray(firstBitMapBytes , 0, firstBitMapBytes.size,op);
-            secondBitMap = BitmapFactory.decodeByteArray(secondBitMapBytes , 0, secondBitMapBytes.size,op);
-            //firstBitMap = kv.decodeBytes("firstView", ByteArray(1))
-            //secondBitMap = kv.decodeParcelable("secondView",Bitmap::class.java)
-            mEngine?.created = true
-        }
-    }
 }

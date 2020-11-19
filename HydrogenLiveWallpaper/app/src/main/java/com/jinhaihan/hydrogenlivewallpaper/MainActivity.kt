@@ -23,10 +23,13 @@ import com.jaredrummler.android.colorpicker.ColorPickerDialogListener
 import com.jinhaihan.hydrogenlivewallpaper.ViewPager.CardPagerAdapter
 import com.jinhaihan.hydrogenlivewallpaper.ViewPager.ShadowTransformer
 import com.jinhaihan.hydrogenlivewallpaper.WallpaperUtils.Companion.isUserSavedColor
-import com.jinhaihan.hydrogenlivewallpaper.WallpaperUtils.Companion.saveImagePath
+import com.jinhaihan.hydrogenlivewallpaper.WallpaperUtils.Companion.saveFirstImagePath
+import com.luck.picture.lib.PictureSelector
+import com.luck.picture.lib.config.PictureConfig
+import com.luck.picture.lib.config.PictureMimeType.ofImage
+import com.luck.picture.lib.entity.LocalMedia
+import com.luck.picture.lib.listener.OnResultCallbackListener
 import com.tencent.mmkv.MMKV
-import com.wildma.pictureselector.PictureBean
-import com.wildma.pictureselector.PictureSelector
 import kotlinx.android.synthetic.main.activity_main.*
 import org.greenrobot.eventbus.EventBus
 import pub.devrel.easypermissions.EasyPermissions
@@ -74,27 +77,32 @@ class MainActivity : AppCompatActivity(),ColorPickerDialogListener {
 
         setPic_btn.setOnClickListener {
             val outMetrics = DisplayMetrics()
-            windowManager.defaultDisplay.getRealMetrics(outMetrics)
+            display!!.getRealMetrics(outMetrics)
             val width = outMetrics.widthPixels
             val height = outMetrics.heightPixels
-            PictureSelector
-                .create(this@MainActivity, PictureSelector.SELECT_REQUEST_CODE)
-                .selectPicture(true, width, height, width,height)
-//            PictureSelector.create(this)
-//                .openGallery(ofImage())
-//                .selectionMode(PictureConfig.SINGLE)
-//                .isPageStrategy(false)
-//                .isEnableCrop(true)
-//                .cropImageWideHigh(width,height)
-//                .forResult(object : OnResultCallbackListener<LocalMedia?> {
-//                    override fun onResult(result: List<LocalMedia?>?) {
-//                        // onResult Callback
-//                    }
-//
-//                    override fun onCancel() {
-//                        // onCancel Callback
-//                    }
-//                })
+//            PictureSelector
+//                .create(this@MainActivity, PictureSelector.SELECT_REQUEST_CODE)
+//                .selectPicture(true, width, height, width,height)
+            PictureSelector.create(this)
+                .openGallery(ofImage())
+                .selectionMode(PictureConfig.SINGLE)
+                .imageEngine(GlideEngine.createGlideEngine())
+                .isPageStrategy(false)
+                .isEnableCrop(true)
+                //.cropImageWideHigh(width,height)
+                .withAspectRatio(width,height)
+                .forResult(object : OnResultCallbackListener<LocalMedia?> {
+                    override fun onResult(result: List<LocalMedia?>?) {
+                        // onResult Callback
+                        result?.get(0)?.let { it1 -> saveFirstImagePath(it1) }
+                        //EventBus.getDefault().post(EventMessage())
+                        refreshViewPager()
+                    }
+
+                    override fun onCancel() {
+                        // onCancel Callback
+                    }
+                })
         }
 
         mainPagePopup.setOnClickListener {
@@ -147,18 +155,18 @@ class MainActivity : AppCompatActivity(),ColorPickerDialogListener {
         mCardShadowTransformer.enableScaling(true)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == PictureSelector.SELECT_REQUEST_CODE) {
-            if (data != null) {
-                val picturePath: PictureBean =
-                    data.getParcelableExtra(PictureSelector.PICTURE_RESULT)!!
-                saveImagePath(picturePath)
-                //EventBus.getDefault().post(EventMessage())
-                refreshViewPager()
-            }
-        }
-    }
+//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+//        super.onActivityResult(requestCode, resultCode, data)
+//        if (requestCode == PictureSelector.SELECT_REQUEST_CODE) {
+//            if (data != null) {
+//                val picturePath: PictureBean =
+//                    data.getParcelableExtra(PictureSelector.PICTURE_RESULT)!!
+//                saveImagePath(picturePath)
+//                //EventBus.getDefault().post(EventMessage())
+//                refreshViewPager()
+//            }
+//        }
+//    }
 
 
 
@@ -167,7 +175,7 @@ class MainActivity : AppCompatActivity(),ColorPickerDialogListener {
         cardPagerAdapter.Loading()
         WallpaperUtils.getSettings()
         LiveWallpaperService.needReDarw = true
-        var bm = WallpaperUtils.getSavedImage(baseContext)
+        var bm = WallpaperUtils.getFirstSavedImage(baseContext)
         if(bm == null){
             var wallpaperManager = WallpaperManager.getInstance(applicationContext)
             // 获取当前壁纸
@@ -175,58 +183,51 @@ class MainActivity : AppCompatActivity(),ColorPickerDialogListener {
             bm = (wallpaperDrawable as BitmapDrawable).bitmap.copy(Bitmap.Config.ARGB_8888,true)
         }
         Log.e("aaaa", "开始取色计算" + (Thread.currentThread() == Looper.getMainLooper().getThread()))
-        Palette.from(bm!!).generate(object : Palette.PaletteAsyncListener {
-            override fun onGenerated(palette: Palette?) {
-                outputBitmap(palette, bm)
-            }
-        })
+        outputBitmap(bm!!)
+//        Palette.from(bm!!).generate(object : Palette.PaletteAsyncListener {
+//            override fun onGenerated(palette: Palette?) {
+//                outputBitmap(palette, bm)
+//            }
+//        })
     }
 
-    fun outputBitmap(palette: Palette?, bm: Bitmap){
+    fun outputBitmap(bm: Bitmap){
         processThread?.interrupt()
         Toast.makeText(this, "计算完成后生效", Toast.LENGTH_LONG).show()
 
-        processThread = Thread(
-            object : Runnable {
-                override fun run() {
-                    if (palette == null) {
-                        return
+        WallpaperUtils.getColorsFormBitmap(bm, object :ColorPickCallback{
+            override fun getSuccess(colors: ArrayList<Int>) {
+                processThread = Thread(
+                    object : Runnable {
+                        override fun run() {
+                            WallpaperUtils.makeTwoBitmap(
+                                this@MainActivity,
+                                bm,
+                                colors[0],
+                                colors[1]
+                            )
+                            Log.e("aaaa", "取色计算完毕")
+                            saveTwoBitmap()
+                            runOnUiThread {
+                                cardPagerAdapter.SetBitmaps(
+                                    WallpaperUtils.finalFirstBitmap,
+                                    WallpaperUtils.finalSecondBitmap
+                                )
+                                Toast.makeText(this@MainActivity, "计算完成", Toast.LENGTH_LONG).show()
+                                WallpaperUtils.created = true
+                            }
+                        }
+
                     }
-                    //palette取色不一定取得到某些特定的颜色，这里通过取多种颜色来避免取不到颜色的情况
-                    if (palette.getDarkVibrantColor(Color.TRANSPARENT) !== Color.TRANSPARENT) {
-                        WallpaperUtils.makeTwoBitmap(
-                            bm,
-                            palette.getDarkVibrantColor(Color.TRANSPARENT),
-                            palette.getVibrantColor(Color.TRANSPARENT)
-                        )
-                    } else if (palette.getDarkMutedColor(Color.TRANSPARENT) !== Color.TRANSPARENT) {
-                        WallpaperUtils.makeTwoBitmap(
-                            bm,
-                            palette.getDarkMutedColor(Color.TRANSPARENT),
-                            palette.getMutedColor(Color.TRANSPARENT)
-                        )
-                    } else {
-                        WallpaperUtils.makeTwoBitmap(
-                            bm,
-                            palette.getLightMutedColor(Color.TRANSPARENT),
-                            palette.getLightVibrantColor(Color.TRANSPARENT)
-                        )
-                    }
-                    Log.e("aaaa", "取色计算完毕")
-                    saveTwoBitmap()
-                    runOnUiThread {
-                        cardPagerAdapter.SetBitmaps(
-                            WallpaperUtils.finalFirstBitmap,
-                            WallpaperUtils.finalSecondBitmap
-                        )
-                        Toast.makeText(this@MainActivity, "计算完成", Toast.LENGTH_LONG).show()
-                        WallpaperUtils.created = true
-                    }
-                }
+                )
+                processThread!!.start()
+
 
             }
-        )
-        processThread!!.start()
+
+        })
+
+
 
     }
 
@@ -285,17 +286,8 @@ class MainActivity : AppCompatActivity(),ColorPickerDialogListener {
     override fun onColorSelected(dialogId: Int, color: Int) {
         WallpaperUtils.userSecondPageColor = color
         saveUserColor(color)
-        refreshViewPager()
     }
 
-
-
-    private fun saveSettings(){
-        var kv = MMKV.defaultMMKV()
-        kv.encode("isFirstNeedProcess", WallpaperUtils.isFirstNeedProcess)
-        kv.encode("isSecondPageGradient", WallpaperUtils.isSecondPageGradient)
-        kv.encode("isSecondPageBitmapGradient", WallpaperUtils.isSecondPageBitmapGradient)
-    }
 
     private fun saveUserColor(color: Int){
         var kv = MMKV.defaultMMKV()
