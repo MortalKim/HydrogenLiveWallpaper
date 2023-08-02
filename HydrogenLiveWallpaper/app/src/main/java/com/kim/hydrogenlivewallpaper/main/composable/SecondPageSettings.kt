@@ -14,8 +14,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.kim.hydrogenlivewallpaper.Constant
+import com.kim.hydrogenlivewallpaper.R
 import com.kim.hydrogenlivewallpaper.main.ImageSelectorAndCropper
 import com.kim.hydrogenlivewallpaper.main.MainViewModel
 
@@ -30,43 +32,43 @@ fun SecondPageSettings(mainViewModel: MainViewModel){
     Row (modifier = Modifier.fillMaxSize()){
         LazyColumn (){
             item {
-                Text(text = "副页")
+                Text(text = stringResource(R.string.second_page))
 
-                Text(text = "-- 副页模式 -- 滑动列表 --")
+                Text(text = stringResource(R.string.second_mode))
 
                 Row (verticalAlignment = Alignment.CenterVertically){
                     Checkbox(checked = mainViewModel.wallpaperSettings.value.secondBitmapGradientState.value == Constant.StandalonePic, onCheckedChange = {
                         mainViewModel.wallpaperSettings.value.secondBitmapGradientState.value = Constant.StandalonePic
                     })
-                    Text(text = "图片")
+                    Text(text = stringResource(R.string.picture))
                 }
 
                 Row (verticalAlignment = Alignment.CenterVertically){
                     Checkbox(checked = mainViewModel.wallpaperSettings.value.secondBitmapGradientState.value == Constant.HalfGradient, onCheckedChange = {
                         mainViewModel.wallpaperSettings.value.secondBitmapGradientState.value = Constant.HalfGradient
                     })
-                    Text(text = "基于图片的半屏渐变")
+                    Text(text = stringResource(R.string.pic_base_gradient))
                 }
 
                 Row (verticalAlignment = Alignment.CenterVertically){
                     Checkbox(checked = mainViewModel.wallpaperSettings.value.secondBitmapGradientState.value == Constant.JustGradient, onCheckedChange = {
                         mainViewModel.wallpaperSettings.value.secondBitmapGradientState.value = Constant.JustGradient
                     })
-                    Text(text = "基于图片的渐变色")
+                    Text(text = stringResource(R.string.pic_base_gradient_color))
                 }
 
                 Row (verticalAlignment = Alignment.CenterVertically){
                     Checkbox(checked = mainViewModel.wallpaperSettings.value.secondBitmapGradientState.value == Constant.JustColor, onCheckedChange = {
                         mainViewModel.wallpaperSettings.value.secondBitmapGradientState.value = Constant.JustColor
                     })
-                    Text(text = "基于图片计算的纯色")
+                    Text(text = stringResource(R.string.pic_base_color))
                 }
 
                 Row (verticalAlignment = Alignment.CenterVertically){
                     Checkbox(checked = mainViewModel.wallpaperSettings.value.secondBitmapGradientState.value == Constant.Color, onCheckedChange = {
                         mainViewModel.wallpaperSettings.value.secondBitmapGradientState.value = Constant.Color
                     })
-                    Text(text = "自定义纯色")
+                    Text(text = stringResource(R.string.custom_color))
                 }
             }
 
@@ -78,21 +80,22 @@ fun SecondPageSettings(mainViewModel: MainViewModel){
                     .fillMaxWidth()
                     .padding(5.dp)
                     .weight(1f), onClick = { mainViewModel.secondUseFirst() }) {
-                    Text(text = "使用主页图")
+                    Text(text = stringResource(R.string.use_main_page_pic))
                 }
                 val configuration = LocalConfiguration.current
                 val screenHeight = configuration.screenHeightDp.dp
                 val screenWidth = configuration.screenWidthDp.dp
-                ImageSelectorAndCropper(text = "选择图片", modifier = Modifier
+                ImageSelectorAndCropper(text = stringResource(R.string.pick_pic_oneline), modifier = Modifier
                     .padding(10.dp)
                     .weight(1f)
-                    .fillMaxHeight(), screenHeight.value.toInt(), screenWidth.value.toInt()){
+                    .fillMaxHeight(), height = screenHeight.value.toInt(), width = screenWidth.value.toInt()
+                ){
                     mainViewModel.selectSecondBitmap(uri = it)
                 }
             }
             else{
                 Button(onClick = { mainViewModel.showColorPicker.value = true }) {
-                    Text(text = "选择颜色")
+                    Text(text = stringResource(R.string.pick_color))
                 }
             }
         }

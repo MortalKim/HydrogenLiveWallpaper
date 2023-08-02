@@ -57,6 +57,7 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -73,6 +74,7 @@ import pub.devrel.easypermissions.EasyPermissions
 import kotlin.math.ceil
 import kotlin.math.floor
 import androidx.core.view.WindowCompat
+import com.kim.hydrogenlivewallpaper.R
 import com.kim.hydrogenlivewallpaper.main.composable.TransparentSystemBars
 
 /**
@@ -128,7 +130,7 @@ fun Greeting(viewModel: MainViewModel) {
     val horizontalState = rememberPagerState(initialPage = 0)
         Scaffold(topBar = {
             TopAppBar(
-                title = {Text(text = "通用氢壁纸")},
+                title = {Text(text = stringResource(R.string.MainActivityTitle))},
                 actions = {
                     Button(onClick = { viewModel.showAbout.value = true }) {
                         Icon(Icons.Filled.Info, "")
@@ -191,7 +193,7 @@ fun Greeting(viewModel: MainViewModel) {
                                 )
                             }
                             else{
-                                Text(text = "选择一张图片以继续", modifier = Modifier.fillMaxSize(), textAlign = TextAlign.Center)
+                                Text(text = stringResource(R.string.no_image_hint), modifier = Modifier.fillMaxSize(), textAlign = TextAlign.Center)
                             }
 
                         }
@@ -207,7 +209,7 @@ fun Greeting(viewModel: MainViewModel) {
                                 )
                             }
                             else{
-                                Text(text = "选择一张图片以继续", modifier = Modifier.fillMaxSize(), textAlign = TextAlign.Center)
+                                Text(text =stringResource(R.string.no_image_hint), modifier = Modifier.fillMaxSize(), textAlign = TextAlign.Center)
                             }
 
                         }
@@ -281,7 +283,7 @@ fun Greeting(viewModel: MainViewModel) {
                         Button(modifier = Modifier.weight(1f), onClick = {
                             viewModel.processBitmap()
                         }) {
-                            Text(text = "开始计算")
+                            Text(text = stringResource(R.string.start_calculator))
                         }
                         val baseContext = LocalContext.current
                         Button(modifier = Modifier.weight(1f), onClick = {
@@ -292,7 +294,7 @@ fun Greeting(viewModel: MainViewModel) {
                             )
                             baseContext.startActivity(intent)
                         }) {
-                            Text(text = "设置壁纸")
+                            Text(text = stringResource(R.string.set_as_wallpaper))
                         }
                     }
                 }

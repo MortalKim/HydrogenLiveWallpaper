@@ -42,9 +42,11 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.graphics.toRect
+import com.kim.hydrogenlivewallpaper.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -100,7 +102,7 @@ fun ColorPicker (callback: (color:Color)->Unit){
                         .background(backgroundColor.value)
                 )
                 Button(onClick = { callback(backgroundColor.value) }) {
-                    Text(text = "确定")
+                    Text(text =stringResource(R.string.OK))
                 }
             }
         }

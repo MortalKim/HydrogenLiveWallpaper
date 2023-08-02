@@ -50,22 +50,22 @@ fun About (callback: ()->Unit){
                 Text(text = versionName)
                 Text(text = stringResource(id = R.string.about_Text))
                 Row {
-                    Button(onClick = {
-                        val intentFullUrl = "intent://platformapi/startapp?saId=10000007&" +
-                                "clientVersion=3.7.0.0718&qrcode=https%3A%2F%2Fqr.alipay.com%2Ffkx075954pd27u8cqiwvg68%3F_s" +
-                                "%3Dweb-other&_t=1472443966571#Intent;" +
-                                "scheme=alipayqr;package=com.eg.android.AlipayGphone;end"
-                        try {
-                            val intent = Intent.parseUri(intentFullUrl, Intent.URI_INTENT_SCHEME)
-                            context.startActivity(intent)
-                        } catch (e: URISyntaxException) {
-                            e.printStackTrace()
-                        }
-                    }) {
-                        Text(text = "捐赠")
-                    }
+//                    Button(onClick = {
+//                        val intentFullUrl = "intent://platformapi/startapp?saId=10000007&" +
+//                                "clientVersion=3.7.0.0718&qrcode=https%3A%2F%2Fqr.alipay.com%2Ffkx075954pd27u8cqiwvg68%3F_s" +
+//                                "%3Dweb-other&_t=1472443966571#Intent;" +
+//                                "scheme=alipayqr;package=com.eg.android.AlipayGphone;end"
+//                        try {
+//                            val intent = Intent.parseUri(intentFullUrl, Intent.URI_INTENT_SCHEME)
+//                            context.startActivity(intent)
+//                        } catch (e: URISyntaxException) {
+//                            e.printStackTrace()
+//                        }
+//                    }) {
+//                        Text(text = "捐赠")
+//                    }
                     Button(modifier = Modifier.padding(10.dp, 0.dp), onClick = { callback() }) {
-                        Text(text = "确定")
+                        Text(text = stringResource(R.string.OK))
                     }
                 }
 

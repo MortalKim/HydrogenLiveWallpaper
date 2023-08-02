@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">通用氫壁紙</string>
+    <string name="about">關於</string>
+    <string name="about_Text">未經允許請勿上傳至其他網站或平台\n\n
+    設置好壁紙返回桌面之後，需要幾秒來處理新圖片效果\n
+    如果剛設置好壁紙，位置不正確，滑動螢幕即可解決，若無解決請聯繫作者，感謝\n\n</string>
+
+    <string name="pick_color_title">選擇一個預設顏色或自定義</string>
+    <string name="title_activity_main">通用氫壁紙</string>
+    <string name="MainActivityTitle">通用氫壁紙</string>
+    <string name="no_image_hint">選擇一張圖片以繼續</string>
+    <string name="start_calculator">開始計算</string>
+    <string name="set_as_wallpaper">設置壁紙</string>
+    <string name="pic_base_gradient">基於圖片的半屏漸變</string>
+    <string name="pick_pic">選擇\n圖片</string>
+    <string name="main_page">主頁</string>
+    <string name="second_page">副頁</string>
+    <string name="second_mode">-- 副頁模式 -- 滑動列表 --</string>
+    <string name="picture">圖片</string>
+    <string name="pic_base_gradient_color">基於圖片的漸變色</string>
+    <string name="pic_base_color">基於圖片計算的純色</string>
+    <string name="custom_color">自定義純色</string>
+    <string name="use_main_page_pic">使用主頁圖</string>
+    <string name="pick_pic_oneline">選擇圖片</string>
+    <string name="pick_color">選擇顏色</string>
+    <string name="OK">確定</string>
+    <string name="please_wait">請稍後...</string>
+
+</resources>

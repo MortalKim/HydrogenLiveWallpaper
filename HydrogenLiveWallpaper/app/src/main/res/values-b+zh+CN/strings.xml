@@ -1,10 +1,10 @@
 <resources>
     <string name="app_name">通用氢壁纸</string>
     <string name="about">关于</string>
-    <string name="about_Text">未经允许请勿上传至其他网站或平台\n\n
-    设置好壁纸返回桌面之后，需要几秒来处理新图片效果\n
-    如果刚设置好壁纸，位置不正确，滑动屏幕即可解决，若无解决请联系作者，感谢\n\n
-    可以点击捐赠按钮进行捐赠，感谢各位的认可</string>
+    <string name="about_Text">未經允許請勿上傳至其他網站或平台\n\n
+    設置好壁紙返回桌面之後，需要幾秒來處理新圖片效果\n
+    如果剛設置好壁紙，位置不正確，滑動螢幕即可解決，若無解決請聯繫作者，感謝\n\n
+    </string>
 
     <string name="pick_color_title">选择一个预设颜色或自定义</string>
     <string name="title_activity_main">通用氢壁纸</string>

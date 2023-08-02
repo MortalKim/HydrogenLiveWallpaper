@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">HydrogenLiveWallpaper</string>
+    <string name="about">About</string>
+    <string name="about_Text">Do not upload to other websites or platforms without permission.\n
+After setting the wallpaper and returning to the home screen, it takes a few seconds to process the new image effect.\n
+If the wallpaper is not positioned correctly immediately after setting it, you can solve it by swiping the screen. If the issue persists, please contact the author. Thank you.\n
+    </string>
+<!--    可以点击捐赠按钮进行捐赠，感谢各位的认可-->
+    <string name="pick_color_title">Pick a preset color or customize</string>
+    <string name="title_activity_main">Hydrogen Live Wallpaper</string>
+    <string name="MainActivityTitle">Hydrogen Live Wallpaper</string>
+    <string name="no_image_hint">Select an image to continue</string>
+    <string name="start_calculator">Start Calculation</string>
+    <string name="set_as_wallpaper">Set as Wallpaper</string>
+    <string name="pic_base_gradient">Image Gradient</string>
+    <string name="pick_pic">Pick\nPicture</string>
+    <string name="main_page">Main Page</string>
+    <string name="second_page">Secondary Page</string>
+    <string name="second_mode">-- Secondary Mode --\n
+        -- Scrollable List --</string>
+    <string name="picture">Picture</string>
+    <string name="pic_base_gradient_color">Image Gradient Color</string>
+    <string name="pic_base_color">Color from Image</string>
+    <string name="custom_color">Custom Solid Color</string>
+    <string name="use_main_page_pic">Use Main Page Picture</string>
+    <string name="pick_pic_oneline">Pick Picture</string>
+    <string name="pick_color">Pick Color</string>
+    <string name="OK">OK</string>
+    <string name="please_wait">Please wait...</string>
+</resources>
