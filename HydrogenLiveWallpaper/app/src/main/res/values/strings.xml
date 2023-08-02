@@ -1,29 +1,30 @@
 <resources>
-    <string name="app_name">通用氢壁纸</string>
-    <string name="about">关于</string>
-    <string name="about_Text">未经允许请勿上传至其他网站或平台\n\n
-    设置好壁纸返回桌面之后，需要几秒来处理新图片效果\n
-    如果刚设置好壁纸，位置不正确，滑动屏幕即可解决，若无解决请联系作者，感谢\n\n
-    可以点击捐赠按钮进行捐赠，感谢各位的认可</string>
-
-    <string name="pick_color_title">选择一个预设颜色或自定义</string>
-    <string name="title_activity_main">通用氢壁纸</string>
-    <string name="MainActivityTitle">通用氢壁纸</string>
-    <string name="no_image_hint">选择一张图片以继续</string>
-    <string name="start_calculator">开始计算</string>
-    <string name="set_as_wallpaper">设置壁纸</string>
-    <string name="pic_base_gradient">基于图片的半屏渐变</string>
-    <string name="pick_pic">选择\n图片</string>
-    <string name="main_page">主页</string>
-    <string name="second_page">副页</string>
-    <string name="second_mode">-- 副页模式 -- 滑动列表 --</string>
-    <string name="picture">图片</string>
-    <string name="pic_base_gradient_color">基于图片的渐变色</string>
-    <string name="pic_base_color">基于图片计算的纯色</string>
-    <string name="custom_color">自定义纯色</string>
-    <string name="use_main_page_pic">使用主页图</string>
-    <string name="pick_pic_oneline">选择图片</string>
-    <string name="pick_color">选择颜色</string>
-    <string name="OK">确定</string>
-    <string name="please_wait">请稍后...</string>
+    <string name="app_name">HydrogenLiveWallpaper</string>
+    <string name="about">About</string>
+    <string name="about_Text">Do not upload to other websites or platforms without permission.\n
+After setting the wallpaper and returning to the home screen, it takes a few seconds to process the new image effect.\n
+If the wallpaper is not positioned correctly immediately after setting it, you can solve it by swiping the screen. If the issue persists, please contact the author. Thank you.\n
+    </string>
+    <!--    可以点击捐赠按钮进行捐赠，感谢各位的认可-->
+    <string name="pick_color_title">Pick a preset color or customize</string>
+    <string name="title_activity_main">Hydrogen Live Wallpaper</string>
+    <string name="MainActivityTitle">Hydrogen Live Wallpaper</string>
+    <string name="no_image_hint">Select an image to continue</string>
+    <string name="start_calculator">Start Calculation</string>
+    <string name="set_as_wallpaper">Set as Wallpaper</string>
+    <string name="pic_base_gradient">Image Gradient</string>
+    <string name="pick_pic">Pick\nPicture</string>
+    <string name="main_page">Main Page</string>
+    <string name="second_page">Secondary Page</string>
+    <string name="second_mode">-- Secondary Mode --\n
+        -- Scrollable List --</string>
+    <string name="picture">Picture</string>
+    <string name="pic_base_gradient_color">Image Gradient Color</string>
+    <string name="pic_base_color">Color from Image</string>
+    <string name="custom_color">Custom Solid Color</string>
+    <string name="use_main_page_pic">Use Main Page Picture</string>
+    <string name="pick_pic_oneline">Pick Picture</string>
+    <string name="pick_color">Pick Color</string>
+    <string name="OK">OK</string>
+    <string name="please_wait">Please wait...</string>
 </resources>
