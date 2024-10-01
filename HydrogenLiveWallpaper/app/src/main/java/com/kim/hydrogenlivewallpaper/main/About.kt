@@ -1,6 +1,7 @@
 package com.kim.hydrogenlivewallpaper.main
 
 import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -62,8 +63,14 @@ fun About (callback: ()->Unit){
 //                            e.printStackTrace()
 //                        }
 //                    }) {
-//                        Text(text = "捐赠")
+//                        Text(text = stringResource(R.string.privacy_policy))
 //                    }
+                    Button(onClick = {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.jinhaihan.top/WordPress/%e9%80%9a%e7%94%a8%e6%b0%a2%e5%a3%81%e7%ba%b8%e9%9a%90%e7%a7%81%e5%8d%8f%e8%ae%ae/"))
+                        context.startActivity(intent)
+                    }) {
+                        Text(text = stringResource(R.string.privacy_policy))
+                    }
                     Button(modifier = Modifier.padding(10.dp, 0.dp), onClick = { callback() }) {
                         Text(text = stringResource(R.string.OK))
                     }

@@ -7,7 +7,9 @@
           <value>
             <InsightsFilterSettings>
               <option name="connection">
-                <ConnectionSetting />
+                <ConnectionSetting>
+                  <option name="appId" value="com.kim.hydrogenlivewallpaper" />
+                </ConnectionSetting>
               </option>
               <option name="failureTypes">
                 <list>

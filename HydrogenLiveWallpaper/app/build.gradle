@@ -10,8 +10,8 @@ android {
         applicationId "com.kim.hydrogenlivewallpaper"
         minSdkVersion 31
         targetSdkVersion 34
-        versionCode 1
-        versionName "Beta-1.0"
+        versionCode 3
+        versionName "Beta-1.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary true
