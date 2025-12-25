@@ -1,9 +1,9 @@
 package com.kim.hydrogenlivewallpaper.main.composable
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
@@ -18,32 +18,37 @@ import com.kim.hydrogenlivewallpaper.main.ImageSelectorAndCropper
 import com.kim.hydrogenlivewallpaper.main.MainViewModel
 
 /**
- * @ClassName: FirstPageSettings
- * @Description: java类作用描述
- * @Author: kim
- * @Date: 7/27/23 10:27 PM
+ * 第一页设置：保持原有逻辑（选择主图 + 是否叠加渐变），但避免请求无限高度。
  */
 @Composable
-fun FirstPageSettings(mainViewModel: MainViewModel){
-    Row (modifier = Modifier.fillMaxSize()){
-        Column (modifier = Modifier){
-            Text(text = stringResource(R.string.main_page))
-            Row (verticalAlignment = Alignment.CenterVertically){
-                Checkbox(checked = mainViewModel.wallpaperSettings.value.firstBitmapGradientState.value, onCheckedChange = {
-                    mainViewModel.wallpaperSettings.value.firstBitmapGradientState.value = it
-                })
-                Text(text = stringResource(R.string.pic_base_gradient))
+fun FirstPageSettings(mainViewModel: MainViewModel) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(
+                        checked = mainViewModel.wallpaperSettings.value.firstBitmapGradientState.value,
+                        onCheckedChange = { mainViewModel.wallpaperSettings.value.firstBitmapGradientState.value = it }
+                    )
+                    Text(text = stringResource(R.string.pic_base_gradient))
+                }
             }
-        }
-        val configuration = LocalConfiguration.current
-        val screenHeight = configuration.screenHeightDp.dp
-        val screenWidth = configuration.screenWidthDp.dp
-        ImageSelectorAndCropper(text = stringResource(R.string.pick_pic), modifier = Modifier
-            .padding(10.dp)
-            .weight(1f)
-            .fillMaxHeight(), height = screenHeight.value.toInt(), width = screenWidth.value.toInt()
-        ){
-            mainViewModel.selectFirstBitmap(uri = it)
+
+            val configuration = LocalConfiguration.current
+            val screenHeight = configuration.screenHeightDp.dp
+            val screenWidth = configuration.screenWidthDp.dp
+            ImageSelectorAndCropper(
+                text = stringResource(R.string.pick_pic),
+                modifier = Modifier.padding(start = 12.dp),
+                height = screenHeight.value.toInt(),
+                width = screenWidth.value.toInt(),
+            ) {
+                mainViewModel.selectFirstBitmap(uri = it)
+            }
         }
     }
 }

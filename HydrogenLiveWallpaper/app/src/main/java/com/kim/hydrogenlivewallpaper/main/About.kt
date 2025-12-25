@@ -18,7 +18,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.kim.hydrogenlivewallpaper.R
-import java.net.URISyntaxException
 
 
 /**
@@ -41,7 +40,7 @@ fun About (callback: ()->Unit){
             val context = LocalContext.current
             val packageManager = context.packageManager
             val packageInfo = packageManager.getPackageInfo(context.packageName, 0)
-            val versionName = packageInfo.versionName
+            val versionName = packageInfo.versionName ?: ""
             Column(
                 modifier = Modifier.padding(18.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
